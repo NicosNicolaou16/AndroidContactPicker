@@ -1,9 +1,7 @@
 package com.nicos.androidcontactpicker
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.provider.ContactsPickerSessionContract.ACTION_PICK_CONTACTS
@@ -16,10 +14,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,12 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.nicos.androidcontactpicker.contact_picker.processContactPickerResultUri
 import com.nicos.androidcontactpicker.data.Contact
 import com.nicos.androidcontactpicker.ui.theme.AndroidContactPickerTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,47 +59,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private suspend fun processContactPickerResultUri(
-    sessionUri: Uri,
-    context: Context
-): List<Contact> = withContext(Dispatchers.IO) {
-    // Define the columns we want to retrieve from the ContactPicker ContentProvider
-    val projection = arrayOf(
-        ContactsContract.Contacts._ID,
-        ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-        ContactsContract.Data.MIMETYPE, // Type of data (e.g., email or phone)
-        ContactsContract.Data.DATA1, // The actual data (Phone number / Email string)
-    )
 
-    val results = mutableListOf<Contact>()
-
-    // Note: The Contact Picker Session Uri doesn't support custom selection & selectionArgs.
-    context.contentResolver.query(sessionUri, projection, null, null, null)?.use { cursor ->
-        // Get the column indices for our requested projection
-        val contactIdIdx = cursor.getColumnIndex(ContactsContract.Contacts._ID)
-        val mimeTypeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
-        val nameIdx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-        val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
-
-        while (cursor.moveToNext()) {
-            val contactId = cursor.getString(contactIdIdx)
-            val mimeType = cursor.getString(mimeTypeIdx)
-            val name = cursor.getString(nameIdx) ?: ""
-            val data1 = cursor.getString(data1Idx) ?: ""
-
-            // Determine if the current row represents an email or a phone number
-            val email =
-                if (mimeType == ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE) data1 else null
-            val phone =
-                if (mimeType == ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) data1 else null
-
-            // Add the parsed contact to our results list
-            results.add(Contact(contactId, name, email, phone))
-        }
-    }
-
-    return@withContext results
-}
 
 @Composable
 fun ContactPicker(modifier: Modifier = Modifier) {
@@ -128,14 +94,47 @@ fun ContactPicker(modifier: Modifier = Modifier) {
         putExtra(EXTRA_PICK_CONTACTS_MATCH_ALL_DATA_FIELDS, false)
     }
 
-    Box(
+    Column(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        androidx.compose.material3.Button(onClick = {
-            pickContact.launch(pickContactIntent)
-        }) {
-            androidx.compose.material3.Text(text = "Pick Contacts")
+        // Scrollable list of contacts (takes up space above the button if contacts exist)
+        if (contacts.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f) // Takes available space
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                items(contacts) { contact ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = contact.name, style = MaterialTheme.typography.titleMedium)
+                            Text(text = contact.phone ?: "No Phone", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+        } else {
+            // Spacer to keep the button centered when list is empty
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        // Button remains centered (at the bottom of the list or middle of screen)
+        Button(
+            onClick = { pickContact.launch(pickContactIntent) },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "Pick Contacts")
+        }
+
+        if (contacts.isEmpty()) {
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
