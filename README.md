@@ -28,7 +28,7 @@ To run this project, you must set up the **Android CinnamonBun (Android 17 Previ
 ## 📸 Demos
 
 <p align="left">
-  <img src="examples/contact_picker_demo.gif" alt="Contact Picker UI" height="500">
+  <img src="examples/untitled.gif" alt="Contact Picker UI" height="500">
 </p>
 
 ## 🛠️ Tech Stack & Libraries
