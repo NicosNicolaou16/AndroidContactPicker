@@ -86,7 +86,11 @@ fun ContactPicker(modifier: Modifier = Modifier) {
     )
 
     val pickContactIntent = Intent(ACTION_PICK_CONTACTS).apply {
+        // Enable multi-select
+        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        // Set limit of selectable contacts
         putExtra(EXTRA_PICK_CONTACTS_SELECTION_LIMIT, 5)
+        // Define the specific contact data fields you need
         putStringArrayListExtra(
             EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS,
             requestedFields
