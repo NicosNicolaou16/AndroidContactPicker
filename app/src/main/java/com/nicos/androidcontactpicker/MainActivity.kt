@@ -60,7 +60,6 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
 @Composable
 fun ContactPicker(modifier: Modifier = Modifier) {
     var contacts by remember { mutableStateOf<List<Contact>>(emptyList()) }
@@ -119,7 +118,10 @@ fun ContactPicker(modifier: Modifier = Modifier) {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = contact.name, style = MaterialTheme.typography.titleMedium)
-                            Text(text = contact.phone ?: "No Phone", style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                text = contact.phone ?: "No Phone",
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                     }
                 }
