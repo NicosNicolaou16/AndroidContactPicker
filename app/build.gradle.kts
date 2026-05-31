@@ -5,9 +5,9 @@ plugins {
 
 android {
     namespace = "com.nicos.androidcontactpicker"
-    buildToolsVersion = "37.0.0 rc2"
+    buildToolsVersion = "37.0.0"
     compileSdk {
-        version = preview("CinnamonBun")
+        version = preview("37")
     }
 
     defaultConfig {
