@@ -42,8 +42,9 @@ This project is built with **[Kotlin](https://kotlinlang.org/docs/getting-starte
 
 -   **Target SDK:** **37** (Android 17 requirement)
 -   **Minimum SDK:** **28**
--   **Kotlin Version:** **2.4.0**
--   **Gradle Version:** **9.2.1**
+-   **Kotlin Version:** **2.4.21**
+-   **AGP Version:** **9.4.1**
+-   **Gradle Version:** **9.8.2**
 
 ## 📚 References & Useful Links
 
